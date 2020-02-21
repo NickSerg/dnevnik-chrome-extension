@@ -1,6 +1,6 @@
 'use strict';
 
-(function int() {
+(function init($) {
     const averageColor = 'darkgreen';
     const extensionClass = 'dnevnik-extension';
 
@@ -20,37 +20,46 @@
         }
     };
 
-    let setAverageEstimate = function (rowIndex, total, count) {
+    let setAverageEstimate = function (rowIndex, estimations) {
         const estimateCell = $(`${totalEstimatesTableSelector} tr:eq(${rowIndex}) ${estimatesCellSelector}`);
         if ($(estimateContainer, estimateCell).length)
             return;
 
-        if($(`span.${extensionClass}`, estimateCell).length)
-            return;
+        $(`span.${extensionClass}`, estimateCell).remove();
+        let total = 0;
+        let count = 0;
+        let tooltip = '';
+        for (let i = 5; i >= 2; i--) {
+            if(estimations[i]) {
+                const estimateCount = estimations[i];
+                total += i * estimateCount;
+                count += estimateCount;
+                tooltip += `\n${i}: ${estimateCount}`;
+            }
+        }
 
         const average = total / count;
+        tooltip = `${average}\n${tooltip}`;
         let element = $('<span/>')
             .css('color', averageColor)
             .addClass(extensionClass)
             .text(Math.round(average * 100) / 100);
 
-        estimateCell.attr('title', average).append(element);
+        estimateCell.attr('title', tooltip).append(element);
     };
 
     waitForElement(estimatesContainer, function () {
         let estimateTable = $(`${estimatesContainer} table`);
         $('tr', estimateTable).each(function (index) {
-            let total = 0;
-            let count = 0;
+            const estimations = {};
             $(`td ${estimateContainer} ${estimateCellSelector}`, this).each(function () {
                 let estimate = +$(this).text();
                 if (estimate && !isNaN(estimate)) {
-                    total += estimate;
-                    count++;
+                    estimations[estimate] = (estimations[estimate] || 0) + 1;
                 }
             });
 
-            setAverageEstimate(index, total, count);
+            setAverageEstimate(index, estimations);
         });
     });
-}());
+}(window.jQuery));
