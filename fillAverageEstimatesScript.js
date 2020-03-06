@@ -1,17 +1,17 @@
 'use strict';
 
-(function init($) {
+(function init() {
     const averageColor = 'darkgreen';
     const extensionClass = 'dnevnik-extension';
 
-    const totalEstimatesTableSelector = 'div.estimate div.right table';
+    const finalEstimatesTableSelector = 'div.estimate div.right table';
     const estimateContainer = 'app-single-estimate';
-    const estimatesCellSelector = 'td.values'
-    const estimateCellSelector = 'span.value'
+    const estimatesCellSelector = 'td.values';
+    const estimateCellSelector = 'span.value';
     const estimatesContainer = 'div.estimate div.middle';
 
-    let waitForElement = function (selector, callback) {
-        if ($(selector).length) {
+    const waitForElement = function (selector, callback) {
+        if (document.querySelector(selector)) {
             callback();
         } else {
             setTimeout(function () {
@@ -20,12 +20,25 @@
         }
     };
 
-    let setAverageEstimate = function (rowIndex, estimations) {
-        const estimateCell = $(`${totalEstimatesTableSelector} tr:eq(${rowIndex}) ${estimatesCellSelector}`);
-        if ($(estimateContainer, estimateCell).length)
+    const findElement = (selector) => {
+        return (selector)
+    }
+
+    const setAverageEstimate = function (rowIndex, estimations) {
+        const finalEstimateRows = document.querySelectorAll(`${finalEstimatesTableSelector} tr`);
+        const estimateCell = finalEstimateRows[rowIndex].querySelector(estimatesCellSelector);
+        if (!estimateCell)
             return;
 
-        $(`span.${extensionClass}`, estimateCell).remove();
+        const doesFinalEstimateExist = !!estimateCell.querySelector(estimateContainer);
+        if(doesFinalEstimateExist)
+            return;
+
+        const averageEstimate = estimateCell.querySelector(`span.${extensionClass}`);
+        if(averageEstimate) {
+            averageEstimate.remove();
+        }
+
         let total = 0;
         let count = 0;
         let tooltip = '';
@@ -40,20 +53,27 @@
 
         const average = total / count;
         tooltip = `${average}\n${tooltip}`;
-        let element = $('<span/>')
-            .css('color', averageColor)
-            .addClass(extensionClass)
-            .text(Math.round(average * 100) / 100);
+        const element = document.createElement('span');
+        element.setAttribute('style', `color: ${averageColor}`);
+        element.setAttribute('class', extensionClass);
+        element.textContent = (Math.round(average * 100) / 100).toString();
 
-        estimateCell.attr('title', tooltip).append(element);
+        estimateCell.setAttribute('title', tooltip);
+        estimateCell.appendChild(element);
     };
 
     waitForElement(estimatesContainer, function () {
-        let estimateTable = $(`${estimatesContainer} table`);
-        $('tr', estimateTable).each(function (index) {
+        let estimateTable = document.querySelector(`${estimatesContainer} table`);
+        if(!estimateTable) {
+            return;
+        }
+
+        estimateTable.querySelectorAll('tr').forEach((row, index) => {
             const estimations = {};
-            $(`td ${estimateContainer} ${estimateCellSelector}`, this).each(function () {
-                let estimate = +$(this).text();
+            row.querySelectorAll(`td ${estimateContainer} ${estimateCellSelector}`)
+                .forEach((cell) =>
+            {
+                const estimate = +cell.textContent;
                 if (estimate && !isNaN(estimate)) {
                     estimations[estimate] = (estimations[estimate] || 0) + 1;
                 }
@@ -62,4 +82,4 @@
             setAverageEstimate(index, estimations);
         });
     });
-}(window.jQuery));
+}());

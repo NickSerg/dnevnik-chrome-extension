@@ -10,7 +10,7 @@
   "content_scripts": [
     {
       "matches": ["https://dnevnik2.petersburgedu.ru/journal/estimate"],
-      "js": ["jquery.slim.min.js","fillAverageEstimatesScript.js"]
+      "js": ["fillAverageEstimatesScript.js"]
     }
   ],
   "page_action": {
