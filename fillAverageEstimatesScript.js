@@ -6,8 +6,8 @@
 
     const finalEstimatesTableSelector = 'div.estimate div.right table';
     const estimateContainer = 'app-single-estimate';
-    const estimatesCellSelector = 'td.values';
-    const estimateCellSelector = 'span.value';
+    const estimatesCellSelector = 'app-estimates-cell';
+    const estimateValueSelector = 'span.value';
     const estimatesContainer = 'div.estimate div.middle';
 
     const waitForElement = function (selector, callback) {
@@ -39,17 +39,20 @@
             averageEstimate.remove();
         }
 
+        if(!estimations || Object.keys(estimations).length === 0)
+            return;
+
         let total = 0;
         let count = 0;
         let tooltip = '';
-        for (let i = 5; i >= 2; i--) {
-            if(estimations[i]) {
-                const estimateCount = estimations[i];
-                total += i * estimateCount;
+        Object.keys(estimations).sort().forEach(estimate => {
+            const estimateCount = estimations[estimate];
+            if(estimateCount) {
+                total += estimate * estimateCount;
                 count += estimateCount;
-                tooltip += `\n${i}: ${estimateCount}`;
+                tooltip += `\n${estimate}: ${estimateCount}`;
             }
-        }
+        });
 
         const average = total / count;
         tooltip = `${average}\n${tooltip}`;
@@ -70,12 +73,20 @@
 
         estimateTable.querySelectorAll('tr').forEach((row, index) => {
             const estimations = {};
-            row.querySelectorAll(`td ${estimateContainer} ${estimateCellSelector}`)
-                .forEach((cell) =>
-            {
-                const estimate = +cell.textContent;
-                if (estimate && !isNaN(estimate)) {
-                    estimations[estimate] = (estimations[estimate] || 0) + 1;
+            row.querySelectorAll(estimatesCellSelector).forEach((cell) => {
+                let totalEstimate = 0;
+                let estimatesCount = 0;
+                cell.querySelectorAll(estimateValueSelector).forEach((estimateElement) => {
+                   const estimate = +estimateElement.textContent;
+                   if (estimate && !isNaN(estimate)) {
+                       totalEstimate += estimate;
+                       estimatesCount ++;
+                   }
+                });
+
+                if(estimatesCount) {
+                    const cellEstimate = totalEstimate / estimatesCount;
+                    estimations[cellEstimate] = (estimations[cellEstimate] || 0) + 1;
                 }
             });
 
