@@ -4,11 +4,12 @@
     const averageColor = 'darkgreen';
     const extensionClass = 'dnevnik-extension';
 
-    const finalEstimatesTableSelector = 'div.estimate div.right table';
-    const estimateContainer = 'app-single-estimate';
-    const estimatesCellSelector = 'app-estimates-cell';
-    const estimateValueSelector = 'span.value';
-    const estimatesContainer = 'div.estimate div.middle';
+    const estimateSection = 'section.estimate-page__section int-estimate-date-grid-container';
+    const finalEstimatesTableSelector = `${estimateSection} div.date-grid__container_position_right table`;
+    const estimateContainer = 'feature-estimate';
+    const estimatesCellSelector = 'feature-estimate-cell';
+    const estimateValueSelector = 'span.estimate__value';
+    const estimatesContainer = `${estimateSection} div.date-grid__container_position_middle`;
 
     const waitForElement = function (selector, callback) {
         if (document.querySelector(selector)) {
@@ -20,10 +21,6 @@
         }
     };
 
-    const findElement = (selector) => {
-        return (selector)
-    }
-
     const setAverageEstimate = function (rowIndex, estimations) {
         const finalEstimateRows = document.querySelectorAll(`${finalEstimatesTableSelector} tr`);
         const estimateCell = finalEstimateRows[rowIndex].querySelector(estimatesCellSelector);
@@ -31,15 +28,15 @@
             return;
 
         const doesFinalEstimateExist = !!estimateCell.querySelector(estimateContainer);
-        if(doesFinalEstimateExist)
+        if (doesFinalEstimateExist)
             return;
 
         const averageEstimate = estimateCell.querySelector(`span.${extensionClass}`);
-        if(averageEstimate) {
+        if (averageEstimate) {
             averageEstimate.remove();
         }
 
-        if(!estimations || Object.keys(estimations).length === 0)
+        if (!estimations || Object.keys(estimations).length === 0)
             return;
 
         let total = 0;
@@ -47,7 +44,7 @@
         let tooltip = '';
         Object.keys(estimations).sort().forEach(estimate => {
             const estimateCount = estimations[estimate];
-            if(estimateCount) {
+            if (estimateCount) {
                 total += estimate * estimateCount;
                 count += estimateCount;
                 tooltip += `\n${estimate}: ${estimateCount}`;
@@ -67,7 +64,7 @@
 
     waitForElement(estimatesContainer, function () {
         let estimateTable = document.querySelector(`${estimatesContainer} table`);
-        if(!estimateTable) {
+        if (!estimateTable) {
             return;
         }
 
@@ -77,14 +74,14 @@
                 let totalEstimate = 0;
                 let estimatesCount = 0;
                 cell.querySelectorAll(estimateValueSelector).forEach((estimateElement) => {
-                   const estimate = +estimateElement.textContent;
-                   if (estimate && !isNaN(estimate)) {
-                       totalEstimate += estimate;
-                       estimatesCount ++;
-                   }
+                    const estimate = +estimateElement.textContent;
+                    if (estimate && !isNaN(estimate)) {
+                        totalEstimate += estimate;
+                        estimatesCount++;
+                    }
                 });
 
-                if(estimatesCount) {
+                if (estimatesCount) {
                     const cellEstimate = totalEstimate / estimatesCount;
                     estimations[cellEstimate] = (estimations[cellEstimate] || 0) + 1;
                 }
